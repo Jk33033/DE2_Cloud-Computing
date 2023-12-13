@@ -19,11 +19,9 @@ DATE_PARAM = "2023-10-21"
 date = datetime.datetime.strptime(DATE_PARAM, "%Y-%m-%d")
 
 # Wikimedia API URL formation
-# See https://wikimedia.org/api/rest_v1/#/Edited%20pages%20data/get_metrics_edited_pages_top_by_edits__project___editor_type___page_type___year___month___day_
 url = f"https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia/all-access/{date.strftime('%Y/%m/%d')}"
 print(f"Requesting REST API URL: {url}")
 
-# Getting response from Wikimedia API
 # Getting response from Wikimedia API
 wiki_server_response = requests.get(url, headers={"User-Agent": "curl/7.68.0"})
 wiki_response_status = wiki_server_response.status_code
@@ -54,33 +52,20 @@ print(f"Created directory {RAW_LOCATION_BASE}")
 
 # %%
 
-########
-# LAB  #
-########
-#
 # Save the contents of `wiki_response_body` to file called `raw-edits-YYYY-MM-DD.txt` into the folder
 # in variable `RAW_LOCATION_BASE` defined
-# i.e: `data/raw-edits/raw-edits-2021-10-01.txt`.
 raw_views_file = RAW_LOCATION_BASE / f"raw-views-{date.strftime('%Y-%m-%d')}.txt"
 with raw_views_file.open("w") as file:
     file.write(wiki_response_body)
     print(f"Saved raw views to {raw_views_file}")
-# Saving the contents of `wiki_response_body` to a file
-# The file is named in the format `raw-edits-YYYY-MM-DD.txt` and saved in the folder defined in `RAW_LOCATION_BASE`
 
-## FILL IN YOUR SOLUTION HERE
 
 # %%
-########
-# LAB  #
-########
+
 s3 = boto3.client("s3")
 S3_WIKI_BUCKET = "ceu-jo-kudo-wikidata"
-# Create a new bucket for your wikipedia pipeline
-# > A good name can be i.e. "ceu-<<your-name>>-wikidata"
-# > Store the bucket name in the varuable S3_WIKI_BUCKET
 
-## FILL IN YOUR SOLUTION HERE
+
 bucket_names = [bucket["Name"] for bucket in s3.list_buckets()["Buckets"]]
 # Only create the bucket if it doesn't exist
 if S3_WIKI_BUCKET not in bucket_names:
@@ -98,11 +83,6 @@ assert s3.list_objects(
 # %%
 
 # Upload the file you created to S3.
-# - Upload the file to your bucket.
-# - Place the file in S3 under a folder called `datalake/raw/`.
-# - Keep the file's name as `raw-edits-YYYY-MM-DD.txt` (where YYYY-MM-DD is the date of the file).
-#   > Don't hardcode the date. Calculate it from the DATE_PARAM variable.
-# - Verify that the file is there (list the bucket in Python or on the AWS Website)
 
 print(raw_views_file)
 res = s3.upload_file(
@@ -119,7 +99,7 @@ assert s3.head_object(
     Key=f"datalake/raw/raw-views-{date.strftime('%Y-%m-%d')}.txt",
 )
 
-# END OF LAB
+
 
 # %%
 # Parse the Wikipedia response and process the data
